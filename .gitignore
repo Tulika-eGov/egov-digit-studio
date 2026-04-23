@@ -1,0 +1,29 @@
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Editor settings
+.vscode/
+.idea/
+
+# Build outputs
+build/
+dist/
+
+# Dependencies
+node_modules/
+
+# Local Tilt.dev binary (see README; avoids Ruby `tilt` gem on PATH)
+bin/tilt
+
+# Temp files
+*.swp
+*.swo
+.tmp/
+tmp/
