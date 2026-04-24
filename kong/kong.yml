@@ -233,6 +233,105 @@ services:
     paths:
     - /digit-ui
     strip_path: false
+- name: digit-studio
+  url: http://digit-studio:80
+  tags:
+  - studio
+  routes:
+  - name: digit-studio-route
+    paths:
+    - /digit-studio
+    strip_path: false
+- name: public-service-init
+  url: http://public-service-init:8080
+  tags:
+  - studio
+  routes:
+  - name: public-service-init-route
+    paths:
+    - /public-service-init
+    strip_path: false
+- name: public-service
+  url: http://public-service:8080
+  tags:
+  - studio
+  routes:
+  - name: public-service-route
+    paths:
+    - /public-service
+    strip_path: false
+- name: health-individual
+  url: http://health-individual:8080
+  tags:
+  - studio
+  routes:
+  - name: health-individual-route
+    paths:
+    - /health-individual
+    strip_path: false
+- name: health-service-request
+  url: http://health-service-request:8080
+  tags:
+  - studio
+  routes:
+  - name: health-service-request-route
+    paths:
+    - /health-service-request
+    strip_path: false
+- name: otp-service
+  url: http://egov-otp:8080
+  tags:
+  - studio
+  routes:
+  - name: otp-route
+    paths:
+    - /otp
+    strip_path: false
+- name: user-otp-service
+  url: http://user-otp:8080
+  tags:
+  - studio
+  routes:
+  - name: user-otp-route
+    paths:
+    - /user-otp
+    strip_path: false
+- name: egov-notification-sms
+  url: http://egov-notification-sms:8080
+  tags:
+  - studio
+  routes:
+  - name: egov-notification-sms-route
+    paths:
+    - /egov-notification-sms
+    strip_path: false
+- name: studio-pdf
+  url: http://studio-pdf:8080
+  tags:
+  - studio
+  routes:
+  - name: studio-pdf-route
+    paths:
+    - /studio-pdf
+    strip_path: false
+- name: pdf-service
+  url: http://pdf-service:8080
+  tags:
+  - studio
+  routes:
+  - name: pdf-service-route
+    paths:
+    - /pdf-service
+    strip_path: false
+- name: inbox
+  url: http://inbox:8080
+  tags:
+  - studio
+  routes:
+  - name: inbox-route
+    paths:
+    - /inbox
+    strip_path: false
 - name: jupyter-service
   url: http://digit-jupyter:8888
   tags:

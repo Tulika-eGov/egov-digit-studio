@@ -4,9 +4,12 @@ Run a **DIGIT core** stack on your laptop with **Docker Compose** and optional *
 
 ## What you get locally
 
-- Postgres (seeded), Redis, Redpanda (Kafka-compatible), MinIO  
+- Postgres (seeded), Redis, Redpanda (Kafka-compatible), MinIO, Elasticsearch 7.x (for inbox)  
 - Core services: MDMS v2, ENC, IDGEN, User, Workflow v2, Localization, Boundary v2, Access Control, Persister, Filestore, HRMS, URL shortening, boundary management (Node)  
+- **Studio** (Helm-aligned envs): health-individual, health-service-request, public-service-init, public-service, egov-otp, user-otp, egov-notification-sms, pdf-service, studio-pdf, digit-studio, inbox — plus Kong routes under the same path prefixes. Service maps for inbox live in `configs/studio/inbox.env` (search URLs rewritten to `http://kong:8000/...` so you can add matching routes later).  
 - Kong on **http://localhost:18000**, DIGIT UI on **http://localhost:18000/digit-ui/**
+
+Override images via `.env` or the shell using variables listed in the header comment of `docker-compose.yml` (e.g. `IMAGE_DIGIT_STUDIO`, `IMAGE_PUBLIC_SERVICE`, …).
 
 PGR / complaint APIs are **not** included in this compose file (add a service + Kong routes if you need them).
 

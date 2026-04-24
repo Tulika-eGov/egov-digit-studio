@@ -54,8 +54,14 @@ dc_resource('egov-idgen', labels=['core-services'],
         link('http://localhost:18088/egov-idgen/health', 'Health'),
     ])
 
+dc_resource('egov-otp', labels=['studio'],
+    resource_deps=['pgbouncer', 'redpanda'],
+    links=[
+        link('http://localhost:18115/otp/health', 'Health'),
+    ])
+
 dc_resource('egov-user', labels=['core-services'],
-    resource_deps=['egov-enc-service'],
+    resource_deps=['egov-enc-service', 'egov-otp'],
     links=[
         link('http://localhost:18107/user/health', 'Health'),
     ])
@@ -136,6 +142,70 @@ dc_resource('egov-url-shortening', labels=['core-services'],
     resource_deps=['pgbouncer'],
     links=[
         link('http://localhost:18085/egov-url-shortening/actuator/health', 'Health'),
+    ])
+
+# ==================== Studio (DIGIT-DevOps studio-services) ====================
+dc_resource('elasticsearch', labels=['studio'])
+
+dc_resource('health-individual', labels=['studio'],
+    resource_deps=['egov-mdms-service', 'egov-enc-service', 'egov-idgen', 'egov-user', 'egov-localization'],
+    links=[
+        link('http://localhost:18111/health-individual/health', 'Health'),
+    ])
+
+dc_resource('health-service-request', labels=['studio'],
+    resource_deps=['egov-mdms-service'],
+    links=[
+        link('http://localhost:18112/health-service-request/health', 'Health'),
+    ])
+
+dc_resource('public-service-init', labels=['studio'],
+    resource_deps=['egov-workflow-v2', 'egov-idgen', 'egov-localization', 'health-individual', 'health-service-request'],
+    links=[
+        link('http://localhost:18113/public-service-init/actuator/health', 'Health'),
+    ])
+
+dc_resource('public-service', labels=['studio'],
+    resource_deps=['public-service-init', 'health-individual', 'health-service-request'],
+    links=[
+        link('http://localhost:18114/public-service/actuator/health', 'Health'),
+    ])
+
+dc_resource('user-otp', labels=['studio'],
+    resource_deps=['egov-otp', 'egov-user', 'egov-localization'],
+    links=[
+        link('http://localhost:18116/user-otp/health', 'Health'),
+    ])
+
+dc_resource('egov-notification-sms', labels=['studio'],
+    resource_deps=['redpanda'],
+    links=[
+        link('http://localhost:18117/egov-notification-sms/actuator/health', 'Health'),
+    ])
+
+dc_resource('pdf-service', labels=['studio'],
+    resource_deps=['egov-mdms-service', 'egov-localization', 'egov-filestore'],
+    links=[
+        link('http://localhost:18119/pdf-service/actuator/health', 'Health'),
+    ])
+
+dc_resource('studio-pdf', labels=['studio'],
+    resource_deps=['pdf-service', 'public-service', 'egov-user', 'egov-workflow-v2'],
+    links=[
+        link('http://localhost:18118/studio-pdf/health', 'Health'),
+    ])
+
+dc_resource('digit-studio', labels=['studio'],
+    resource_deps=['kong'],
+    links=[
+        link('http://localhost:18110/digit-studio/', 'Direct'),
+        link('http://localhost:18000/digit-studio/', 'Via Kong'),
+    ])
+
+dc_resource('inbox', labels=['studio'],
+    resource_deps=['elasticsearch', 'egov-workflow-v2', 'egov-user', 'egov-mdms-service'],
+    links=[
+        link('http://localhost:18120/inbox/health', 'Health'),
     ])
 
 # ==================== Local Resources ====================
