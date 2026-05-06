@@ -1,6 +1,6 @@
 # Service startup sequence — egov-digit-studio
 
-This document describes how services in **`docker-compose.yml`** start and depend on each other. **Tilt** (`tilt up`, `Tiltfile`) drives the same Compose project; use **[QUICK-SETUP.md](../QUICK-SETUP.md)** for the minimal command list.
+This document describes how services in **`docker-compose.yml`** start and depend on each other. **Tilt** (`tilt up`, `Tiltfile`) drives the same Compose project; use **[QUICK-SETUP.md](../QUICK-SETUP.md)** for the minimal command list. **Tilt installation and PATH:** **[TILT.md](TILT.md)**.
 
 **Scope:** Laptop-local DIGIT subset (Postgres, PgBouncer, MDMS v2, core Spring services, Kong, studio services). **PGR / complaint APIs** are not defined in this compose file.
 
@@ -177,6 +177,16 @@ docker exec docker-postgres psql -U egov -d egov -c "SELECT schemacode FROM eg_m
 
 See historical notes in older DIGIT docs; this stack seeds from **`db/`** and Flyway skips documented in `docker/db-migrations/migrate-all.sh` where they collide with the dump.
 
+### Inbox flapping or unhealthy
+
+**inbox** depends on **Elasticsearch**, **Redpanda**, **MDMS**, **user**, and **workflow** — it starts late and is sensitive to **memory** and **ES readiness**.
+
+1. **Elasticsearch on Linux:** if ES exits or logs `max virtual memory areas`, raise **`vm.max_map_count`** on the host (e.g. `sudo sysctl -w vm.max_map_count=262144`) and see [Elasticsearch VM settings](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_set_vm_max_map_count_to_at_least_262144).
+2. **RAM:** **digit-elasticsearch** is capped around **1.5 GB** JVM heap + overhead; **inbox** up to **768 MB**. On an 8 GB laptop, start the stack when little else is running, or raise `deploy.resources.limits.memory` in `docker-compose.yml` if you can spare RAM.
+3. **Order:** inbox only starts after **`elasticsearch`** is healthy; the ES healthcheck waits for cluster status **green or yellow** (single-node clusters are often **yellow**, which is normal).
+4. **Logs:** `docker compose logs -f elasticsearch` then `docker compose logs -f inbox` — look for OOM, connection refused to `elasticsearch:9200`, or long Spring startup before actuator is up.
+5. **SERVICE_SEARCH_MAPPING** in **`configs/studio/inbox.env`** points many modules at **Kong** URLs that are **not** in this compose file; some code paths may error when those upstreams are missing (expected for a trimmed laptop stack).
+
 ---
 
 ## 10. Jupyter (optional)
@@ -210,4 +220,5 @@ This repo path may not ship `.github/workflows/ci.yaml`. If you add CI, mirror *
 ## Related
 
 - **[QUICK-SETUP.md](../QUICK-SETUP.md)** — prerequisites and `tilt up` / `docker compose build db-migrations`.
-- **[README.md](../README.md)** — overview, optional `./bin/tilt`, layout.
+- **[TILT.md](TILT.md)** — Tilt CLI install, PATH, optional `./bin/tilt`.
+- **[README.md](../README.md)** — overview and layout.

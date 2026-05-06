@@ -2,7 +2,7 @@
 
 Bring up the laptop-local DIGIT stack using **Tilt**. Tilt still uses **`docker-compose.yml`** underneath (build, health checks, dependencies).
 
-**Full walkthrough:** satisfy [Prerequisites](#prerequisites), install Tilt ([Install Tilt](#install-tilt)), then follow the numbered steps. When services are healthy in Tilt, open the URLs in [Access after startup](#access-after-startup).
+**Full walkthrough:** satisfy [Prerequisites](#prerequisites), install the Tilt CLI (**[docs/TILT.md](docs/TILT.md)** — single place for install, PATH, and `./bin/tilt`), then follow the numbered steps. When services are healthy in Tilt, open the URLs in [Access after startup](#access-after-startup).
 
 ---
 
@@ -13,61 +13,9 @@ Bring up the laptop-local DIGIT stack using **Tilt**. Tilt still uses **`docker-
 | **Docker** | Recent Engine; ~8 GB+ RAM comfortable for the full stack. |
 | **Docker Compose v2** | Required (`docker compose`); Tilt invokes it for this project. |
 | **Git** | To clone the repository. |
-| **Tilt CLI** | Install in the next section; verify with `tilt version`. |
-
-**Optional:** If you use a project-local binary, put it at **`./bin/tilt`** and run **`./bin/tilt up`** instead of `tilt up` — see [README.md — Optional local Tilt binary](README.md#optional-local-tilt-binary).
+| **Tilt CLI** | Install and troubleshoot in **[docs/TILT.md](docs/TILT.md)**; then `tilt version` should work. |
 
 No Kubernetes or cloud accounts are required.
-
----
-
-## Install Tilt
-
-Install the **Tilt CLI** so `tilt` is on your `PATH`. This repo uses Tilt with **Docker Compose only** (you do **not** need a local Kubernetes cluster for `egov-digit-studio`).
-
-Official page (all options): **[https://docs.tilt.dev/install.html](https://docs.tilt.dev/install.html)**.
-
-### Linux
-
-Recommended: official install script (uses a package manager when available, otherwise installs the binary to a directory on your `PATH`; you may need `sudo`):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
-tilt version
-```
-
-Or with [Homebrew](https://brew.sh/) on Linux:
-
-```bash
-brew install tilt
-tilt version
-```
-
-### macOS
-
-Same install script as Linux (often picks up Homebrew automatically):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.sh | bash
-tilt version
-```
-
-Or install only via Homebrew:
-
-```bash
-brew install tilt
-tilt version
-```
-
-### Windows
-
-In **PowerShell**:
-
-```powershell
-iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/tilt-dev/tilt/master/scripts/install.ps1'))
-```
-
-Then open a new terminal and run `tilt version`. [Scoop](https://scoop.sh/) and other options are listed on the [install page](https://docs.tilt.dev/install.html).
 
 ---
 
@@ -121,7 +69,7 @@ Skip if you already built it and did not touch `docker/db-migrations/`.
 tilt up
 ```
 
-If you use **`./bin/tilt`** (optional local binary):
+Optional project-local binary (see **[docs/TILT.md](docs/TILT.md)**):
 
 ```bash
 ./bin/tilt up
@@ -168,6 +116,8 @@ If you regenerate `server.crt` / `server.key`, keep keys readable for the contai
 
 ## Troubleshooting
 
+**Tilt not on PATH, `./bin/tilt`, or multiple `tilt` binaries:** **[docs/TILT.md](docs/TILT.md)**.
+
 ```bash
 # Compose file sanity check
 docker compose config --quiet
@@ -189,4 +139,4 @@ docker compose ps
 docker compose down
 ```
 
-See also **`Tiltfile`** (grouped resources, links, nav buttons) and **`README.md`** for layout and optional **`./bin/tilt`**.
+See also **`Tiltfile`**, **[docs/TILT.md](docs/TILT.md)** (Tilt install and PATH), and **`README.md`**.

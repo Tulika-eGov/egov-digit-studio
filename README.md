@@ -1,6 +1,6 @@
 # egov-digit-studio — laptop-local DIGIT (Tilt + Compose)
 
-Run a **DIGIT core** stack on your laptop with **Tilt** (dashboard, grouped resources, nav buttons). Tilt drives **`docker-compose.yml`**; you still use **`docker compose`** for one-off builds (e.g. `db-migrations`) and cleanup. **Step-by-step setup, first-time DB migration build, and where to open the Tilt UI vs the frontend after startup:** **[QUICK-SETUP.md](QUICK-SETUP.md)**.
+Run a **DIGIT core** stack on your laptop with **Tilt** (dashboard, grouped resources, nav buttons). Tilt drives **`docker-compose.yml`**; you still use **`docker compose`** for one-off builds (e.g. `db-migrations`) and cleanup. **Step-by-step setup, first-time DB migration build, and where to open the Tilt UI vs the frontend after startup:** **[QUICK-SETUP.md](QUICK-SETUP.md)**. **Tilt CLI install, PATH, `./bin/tilt`, and multiple binaries:** **[docs/TILT.md](docs/TILT.md)**.
 
 Configuration and service wiring are informed by **[DIGIT-DevOps](https://github.com/egovernments/DIGIT-DevOps)** (`unified-demo` branch) for Helm values and platform layout. This repo is **not** a full copy of the cloud `unified-demo` footprint (that would require Kubernetes and shared RDS/Kafka/ES).
 
@@ -18,12 +18,11 @@ PGR / complaint APIs are **not** included in this compose file (add a service + 
 ## Prerequisites
 
 1. Docker with Compose v2  
-2. **[Tilt](https://tilt.dev/)** — install the CLI on your PATH (see **[QUICK-SETUP.md — Install Tilt](QUICK-SETUP.md#install-tilt)**).  
-3. **Optional:** a `tilt` binary at **`./bin/tilt`** if your team pins a known-good version — run **`./bin/tilt up`** instead of `tilt up` (see [Optional local Tilt binary](#optional-local-tilt-binary)).
+2. **[Tilt](https://tilt.dev/)** — install the CLI on your PATH; see **[docs/TILT.md](docs/TILT.md)** (install, verify, PATH, optional `./bin/tilt`, `/usr/bin` vs `/usr/local/bin`).
 
 ## Quick start
 
-Use **[QUICK-SETUP.md](QUICK-SETUP.md)** for the full sequence (prerequisites, [Install Tilt](QUICK-SETUP.md#install-tilt), `docker compose build db-migrations`, `tilt up`, stop/reset, and **Tilt UI + frontend URLs once the stack is ready**).
+Use **[QUICK-SETUP.md](QUICK-SETUP.md)** for the full sequence (prerequisites, **`docker compose build db-migrations`**, `tilt up`, stop/reset, and **Tilt UI + frontend URLs**). Install the Tilt CLI first via **[docs/TILT.md](docs/TILT.md)**.
 
 ```bash
 cd egov-digit-studio
@@ -72,13 +71,11 @@ docker exec -it docker-postgres psql -U egov -d egov
 
 ## Tilt notes
 
+Install, PATH, **`./bin/tilt`**, and multiple **`tilt`** binaries: **[docs/TILT.md](docs/TILT.md)**.
+
 - Nav buttons: Health Check, Smoke Tests, Nuke DB, Kong test, Re-seed MDMS, etc.  
 - Stop the dev session: **`tilt down`** (or stop from the Tilt UI).  
 - Tear down containers: **`docker compose down`**. Reset DB volumes: **`docker compose down -v`**.
-
-## Optional local Tilt binary
-
-Some Tilt releases may mark Docker Compose resources as ready before every container health check has passed. If that causes confusion in the UI, try another Tilt version from the [official install docs](https://docs.tilt.dev/install.html), or place a `tilt` executable your team trusts at **`./bin/tilt`** and run **`./bin/tilt up`** so this directory stays self-contained.
 
 ## Alternative: Compose only (no Tilt)
 
@@ -95,6 +92,8 @@ docker compose down
 egov-digit-studio/
 ├── docker-compose.yml   # Service definitions
 ├── Tiltfile              # Tilt wiring (Compose only, no app hot-reload)
+├── docs/
+│   └── TILT.md           # Tilt install, PATH, optional ./bin/tilt
 ├── kong/kong.yml
 ├── nginx/               # digit-ui proxy + globalConfigs.js
 ├── db/                  # init SQL (e.g. full-dump.sql)
