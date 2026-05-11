@@ -198,6 +198,26 @@ services:
     networks:
       - egov-network
 
+  user-seed:
+    image: curlimages/curl:latest
+    container_name: digit-user-seed
+    depends_on:
+      egov-user:
+        condition: service_healthy
+    environment:
+      EGOV_USER_HOST: http://egov-user:8107
+    volumes:
+      - ./seeds/user-seed.sh:/seed.sh:ro
+    entrypoint: >
+      /bin/sh -c "
+      echo '=== Running user seed ===';
+      chmod +x /seed.sh && /seed.sh;
+      exit 0;
+      "
+    networks:
+      - egov-network
+    restart: "no"
+
   # MDMS Backend
   mdms-backend:
     image: ${IMAGE_MDMS_V2:-egovio/mdms-v2:master-1e8d2bb}

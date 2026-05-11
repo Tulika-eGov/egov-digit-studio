@@ -130,6 +130,9 @@ dc_resource('minio', labels=['infrastructure'])
 dc_resource('minio-init', labels=['infrastructure'],
     resource_deps=['minio'],
 )
+dc_resource('user-seed', labels=['maintenance'],
+    resource_deps=['egov-user'],
+)
 dc_resource('egov-filestore', labels=['core-services'],
     resource_deps=['minio-init', 'egov-mdms-service'],
     links=[
@@ -283,4 +286,12 @@ cmd_button(
     location=location.NAV,
     icon_name='monitor_heart',
     text='Start Gatus',
+)
+
+cmd_button(
+    name='seed-users',
+    argv=['./seeds/user-seed.sh'],
+    location=location.NAV,
+    icon_name='person_add',
+    text='Seed Users',
 )
