@@ -8,16 +8,6 @@ allow_k8s_contexts(k8s_context())
 
 load('ext://uibutton', 'cmd_button', 'location')
 
-_digit_devops = os.getenv('DIGIT_DEVOPS_PATH', '').strip()
-if _digit_devops:
-    print('DIGIT_DEVOPS_PATH is set to: ' + _digit_devops)
-else:
-    _default_dd = config.main_dir + '/../DIGIT-DevOps'
-    dd_exists = str(local('test -d "' + _default_dd + '" && echo "exists" || echo "missing"', quiet=True))
-    if 'exists' in dd_exists:
-        print('Found DIGIT-DevOps at ' + _default_dd + ' (set DIGIT_DEVOPS_PATH to override)')
-    else:
-        print('Tip: clone DIGIT-DevOps (branch unified-demo) as ../DIGIT-DevOps or set DIGIT_DEVOPS_PATH')
 
 docker_compose('./docker-compose.yml')
 
