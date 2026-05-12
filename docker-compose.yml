@@ -203,15 +203,17 @@ services:
     container_name: digit-user-seed
     depends_on:
       egov-user:
-        condition: service_healthy
+        condition: service_started   # Don't wait for Docker healthcheck
     environment:
       EGOV_USER_HOST: http://egov-user:8107
     volumes:
       - ./seeds/user-seed.sh:/seed.sh:ro
     entrypoint: >
       /bin/sh -c "
+      echo 'Waiting 120 seconds for egov-user to fully start...';
+      sleep 120;
       echo '=== Running user seed ===';
-      chmod +x /seed.sh && /seed.sh;
+      /bin/sh /seed.sh;
       exit 0;
       "
     networks:
