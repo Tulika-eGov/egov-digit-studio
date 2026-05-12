@@ -53,6 +53,10 @@ if [ -d "/flyway/sql/egov-user" ]; then
     run_migration "egov-user" "egov_user_schema_version" "filesystem:/flyway/sql/egov-user"
 fi
 
+if [ -d "/flyway/sql/egov-otp" ]; then
+    run_migration "egov-otp" "egov_otp_schema_version" "filesystem:/flyway/sql/egov-otp"
+fi
+
 echo ""
 echo "========================================="
 echo "All migrations completed successfully!"

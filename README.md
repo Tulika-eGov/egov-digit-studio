@@ -103,4 +103,4 @@ egov-digit-studio/
 
 ## Resource usage
 
-Roughly **~4 GB RAM** for Docker for a comfortable full stack. Adjust `deploy.resources` in `docker-compose.yml` if your machine is constrained.
+Roughly **~8 GB RAM** for Docker for a comfortable full stack. Adjust `deploy.resources` in `docker-compose.yml` if your machine is constrained.
