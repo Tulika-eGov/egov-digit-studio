@@ -109,7 +109,7 @@ dc_resource('kong', labels=['gateway'],
 
 dc_resource('jupyter', labels=['tools'], auto_init=True,
     links=[
-        link('http://localhost:18888/lab', 'Jupyter Lab'),
+        link('http://localhost:18888/jupyter/lab', 'Jupyter Lab'),
     ])
 
 dc_resource('digit-ui', labels=['frontend'],
