@@ -71,6 +71,15 @@ ADMIN_ROLES='[
 ]'
 create_user "ADMIN" "System Administrator" "9999999999" "admin@digit.org" "$ADMIN_ROLES"
 
+# Create ADMIN user with all roles
+ADMIN_ROLES='[
+  {"code": "SUPERUSER", "name": "Super User", "tenantId": "pg"},
+  {"code": "EMPLOYEE", "name": "Employee", "tenantId": "pg"},
+  {"code": "GRO", "name": "Grievance Routing Officer", "tenantId": "pg"},
+  {"code": "DGRO", "name": "Department GRO", "tenantId": "pg"}
+]'
+create_user "ADMIN1" "System Administrator" "9999999990" "admin@digit.org" "$ADMIN_ROLES"
+
 # Create GRO user
 GRO_ROLES='[
   {"code": "EMPLOYEE", "name": "Employee", "tenantId": "pg"},
