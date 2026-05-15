@@ -3701,7 +3701,8 @@ class APIUploader:
                 json=payload,
                 headers={
                     "Content-Type": "application/json"
-                }
+                },
+                timeout=60
             )
 
             print(f"Status: {response.status_code}")
@@ -3749,7 +3750,8 @@ class APIUploader:
             response = requests.post(
                 url,
                 headers={"Content-Type": "application/json"},
-                data=json.dumps(payload)
+                data=json.dumps(payload),
+                timeout=60
             )
 
             return response
