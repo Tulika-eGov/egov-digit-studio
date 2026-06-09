@@ -17,6 +17,7 @@ Usage:
 from unified_loader import UnifiedExcelReader, APIUploader
 from typing import Optional, Dict
 import os
+import json
 
 
 class CRSLoader:
@@ -531,36 +532,31 @@ class CRSLoader:
 
         for i, mdms_record in enumerate(mdms_records, 1):
             schema_code = mdms_record["schemaCode"]
+            tenant_id = mdms_record["tenantId"]
             unique_id = mdms_record.get("data", {}).get("uniqueIdentifier") or schema_code
 
             try:
                 response = self.uploader.create_mdms_data_v2(
                     schema_code=schema_code,
-                    tenant_id=mdms_record["tenantId"],
+                    tenant_id=tenant_id,
                     mdms_data=mdms_record["data"]
                 )
                 status_code = response.status_code
 
-                if status_code == 401:
-                    print(f"   [UNAUTHORIZED] [{i}/{len(mdms_records)}] {unique_id} (HTTP 401) - Login token invalid or expired")
-                    failed += 1
-                    errors.append({'id': unique_id, 'error': '401 Unauthorized: re-login required'})
-                elif status_code == 403:
-                    print(f"   [FORBIDDEN] [{i}/{len(mdms_records)}] {unique_id} (HTTP 403) - Insufficient permissions")
-                    failed += 1
-                    errors.append({'id': unique_id, 'error': '403 Forbidden'})
-                elif status_code in (200, 201):
-                    print(f"   [OK] [{i}/{len(mdms_records)}] {unique_id}")
+                if status_code in (200, 201, 202):
+                    print(f"   [OK] [{i}/{len(mdms_records)}] {unique_id} | Tenant: {tenant_id}")
                     created += 1
                 else:
                     error_text = response.text[:200] if response.text else str(status_code)
                     print(f"   [FAILED] [{i}/{len(mdms_records)}] {unique_id} (HTTP {status_code})")
                     print(f"   ERROR: {error_text}")
+                    print(f"   REQUEST: {json.dumps({'schemaCode': schema_code, 'tenantId': tenant_id, 'data': mdms_record['data']}, indent=2)}")
                     failed += 1
                     errors.append({'id': unique_id, 'error': error_text})
 
             except Exception as e:
                 print(f"   [ERROR] [{i}/{len(mdms_records)}] {unique_id} - {str(e)[:100]}")
+                print(f"   REQUEST: {json.dumps({'schemaCode': schema_code, 'tenantId': tenant_id, 'data': mdms_record['data']}, indent=2)}")
                 failed += 1
                 errors.append({'id': unique_id, 'error': str(e)[:200]})
 
