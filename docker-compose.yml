@@ -1124,7 +1124,7 @@ services:
       INDIVIDUAL_CREATE_ENDPOINT: health-individual/v1/_create
       INDIVIDUAL_UPDATE_ENDPOINT: health-individual/v1/_update
       INDIVIDUAL_SEARCH_ENDPOINT: health-individual/v1/_search
-      MDMS_SERVICE_HOST: http://egov-mdms-service:8094
+      MDMS_SERVICE_HOST: http://egov-mdms-service:8094/
       MDMS_SEARCH_ENDPOINT: mdms-v2/v1/_search
       MDMS_V2_SEARCH_ENDPOINT: mdms-v2/v2/_search
       MDMS_SEARCH_V2_ENDPOINT: mdms-v2/v2
@@ -1164,7 +1164,7 @@ services:
       SERVICE_REQUEST_UPDATE_ENDPOINT: health-service-request/service/definition/v1/_update
       SAVE_SERVICE_VERSION_CONFIG_MAPPING: save-service-version-config-mapping
       DELETE_BUSINESS_SERVICE_TOPIC: delete-business-service-topic
-      PUBLIC_SERVICE_HOST: http://public-service-init:8080
+      PUBLIC_SERVICE_HOST: http://public-service-init:8080/
       PUBLIC_SERVICE_SEARCH_ENDPOINT: public-service-init/v1/service
       DEFAULT_LIMIT: "100"
       MAX_LIMIT: "1000"
