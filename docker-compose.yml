@@ -280,7 +280,7 @@ services:
       - egov-network
 
   egov-enc-service:
-    image: egovio/egov-enc-service:v2.9.2-4a60f20
+    image: egovio/egov-enc-service:base-docker-upgrade-ce613c1
     container_name: egov-enc-service
     depends_on:
       pgbouncer:
@@ -322,7 +322,7 @@ services:
       - egov-network
 
   egov-idgen:
-    image: egovio/egov-idgen:v2.9.2-4a60f20
+    image: egovio/egov-idgen:master-1e8d2bb
     container_name: egov-idgen
     depends_on:
       pgbouncer:
@@ -423,7 +423,7 @@ services:
       - egov-network
 
   egov-workflow-v2:
-    image: ${IMAGE_EGOV_WORKFLOW_V2:-egovio/egov-workflow-v2:v2.9.2-4a60f20}
+    image: ${IMAGE_EGOV_WORKFLOW_V2:-egovio/egov-workflow-v2:parallel-workflows-lazy-injection-1ace233}
     container_name: egov-workflow-v2
     depends_on:
       pgbouncer:
@@ -433,7 +433,7 @@ services:
       egov-idgen:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:otel:postgresql://postgres:5432/egov?sslmode=disable
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/egov?sslmode=disable
       SPRING_DATASOURCE_USERNAME: egov
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-egov123}
       SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
@@ -467,7 +467,7 @@ services:
       - egov-network
 
   egov-localization:
-    image: egovio/egov-localization:v2.9.2-4a60f20
+    image: egovio/egov-localization:redis-localization-key-5c0a4c4
     container_name: egov-localization
     depends_on:
       pgbouncer:
@@ -479,7 +479,7 @@ services:
       egov-mdms-service:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:otel:postgresql://postgres:5432/egov?sslmode=disable
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/egov?sslmode=disable
       SPRING_DATASOURCE_USERNAME: egov
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-egov123}
       SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
@@ -508,7 +508,7 @@ services:
       - egov-network
 
   boundary-service:
-    image: egovio/boundary-service:v2.9.2-4a60f20
+    image: egovio/boundary-service:master-1e8d2bb
     container_name: boundary-service
     depends_on:
       pgbouncer:
@@ -556,7 +556,7 @@ services:
       - egov-network
 
   egov-accesscontrol:
-    image: egovio/egov-accesscontrol:v2.9.2-4a60f20
+    image: egovio/egov-accesscontrol:master-1e8d2bb
     container_name: egov-accesscontrol
     depends_on:
       pgbouncer:
@@ -594,7 +594,7 @@ services:
       - egov-network
 
   egov-persister:
-    image: egovio/egov-persister:v2.9.2-4a60f20
+    image: egovio/egov-persister:master-3b238aa
     container_name: egov-persister
     depends_on:
       pgbouncer:
@@ -634,7 +634,7 @@ services:
       - egov-network
 
   egov-filestore:
-    image: egovio/egov-filestore:v2.9.2-4a60f20
+    image: egovio/egov-filestore:master-1e8d2bb
     container_name: egov-filestore
     depends_on:
       pgbouncer:
@@ -780,7 +780,7 @@ services:
       - egov-network
 
   egov-url-shortening:
-    image: egovio/egov-url-shortening:v2.9.2-4a60f20
+    image: egovio/egov-url-shortening:master-1e8d2bb
     container_name: egov-url-shortening
     depends_on:
       pgbouncer:
@@ -815,7 +815,7 @@ services:
 
   # --- Studio stack (DIGIT-DevOps studio-services / core-services patterns) ---
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.23
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
     container_name: digit-elasticsearch
     environment:
       - discovery.type=single-node
@@ -844,7 +844,7 @@ services:
       - egov-network
 
   health-individual:
-    image: ${IMAGE_HEALTH_INDIVIDUAL:-egovio/health-individual:Individual-master-register-studio-d307985}
+    image: ${IMAGE_HEALTH_INDIVIDUAL:-egovio/health-individual:Individual-master-register-studio-869b3c3}
     container_name: health-individual
     depends_on:
       pgbouncer:
@@ -965,7 +965,7 @@ services:
       - egov-network
 
   public-service-init:
-    image: ${IMAGE_PUBLIC_SERVICE_INIT:-egovio/public-service-init:develop-e42fed4}
+    image: ${IMAGE_PUBLIC_SERVICE_INIT:-egovio/public-service-init:develop-9087218}
     container_name: public-service-init
     depends_on:
       pgbouncer:
@@ -1075,7 +1075,7 @@ services:
       - egov-network
 
   public-service:
-    image: ${IMAGE_PUBLIC_SERVICE:-egovio/public-service:develop-4351bc1}
+    image: ${IMAGE_PUBLIC_SERVICE:-egovio/public-service:CCSD-1853-17eccfa}
     container_name: public-service
     depends_on:
       pgbouncer:
@@ -1422,7 +1422,7 @@ services:
       - egov-network
 
   digit-studio:
-    image: ${IMAGE_DIGIT_STUDIO:-egovio/digit-studio:studio-e60896a-833}
+    image: ${IMAGE_DIGIT_STUDIO:-egovio/digit-studio:studio-dev-ui-rc19-5-684a989-1415}
     container_name: digit-studio
     # Gateway must be healthy before studio UI (browser talks to APIs through Kong on :18000).
     depends_on:
@@ -1513,7 +1513,7 @@ services:
 
 
   digit-ui:
-    image: egovio/digit-ui:multiarch-d448cb7
+    image: egovio/digit-ui:core-workbench-accessible-3081451
     container_name: digit-ui
     ports:
       - "18080:80"
