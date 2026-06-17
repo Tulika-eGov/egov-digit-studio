@@ -205,7 +205,7 @@ services:
       egov-user:
         condition: service_started   # Don't wait for Docker healthcheck
     environment:
-      EGOV_USER_HOST: http://egov-user:8107
+      EGOV_USER_HOST: http://egov-user:8107/
     volumes:
       - ./seeds/user-seed.sh:/seed.sh:ro
     entrypoint: >
@@ -300,7 +300,7 @@ services:
       MASTER_SALT: qweasdzx
       MASTER_INITIALVECTOR: qweasdzxqwea
       MASTER_PASSWORD_PROVIDER: software
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
       EGOV_MDMS_SEARCH_ENDPOINT: /mdms-v2/v1/_search
       EGOV_STATE_LEVEL_TENANT_ID: pg
       STATE_LEVEL_TENANT_ID: pg.citya
@@ -392,16 +392,16 @@ services:
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
       SERVER_PORT: 8107
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
       EGOV_MDMS_SEARCH_ENDPOINT: /mdms-v2/v1/_search
-      MDMS_HOST: http://egov-mdms-service:8094
-      MDMS_V2_HOST: http://egov-mdms-service:8094
-      EGOV_MDMS_V2_HOST: http://egov-mdms-service:8094
+      MDMS_HOST: http://egov-mdms-service:8094/
+      MDMS_V2_HOST: http://egov-mdms-service:8094/
+      EGOV_MDMS_V2_HOST: http://egov-mdms-service:8094/
       MDMS_SEARCH_ENDPOINT: /mdms-v2/v1/_search
       EGOV_OTP_HOST: http://egov-otp:8080/otp
-      EGOV_ENC_HOST: http://egov-enc-service:1234
-      EGOV_IDGEN_HOST: http://egov-idgen:8088
-      EGOV_ACCESSCONTROL_HOST: http://egov-accesscontrol:8090
+      EGOV_ENC_HOST: http://egov-enc-service:1234/
+      EGOV_IDGEN_HOST: http://egov-idgen:8088/
+      EGOV_ACCESSCONTROL_HOST: http://egov-accesscontrol:8090/
       EGOV_STATE_LEVEL_TENANT_ID: pg
       STATE_LEVEL_TENANT_ID: pg
       OTEL_TRACES_EXPORTER: none
@@ -529,11 +529,11 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       SERVER_PORT: 8081
       SERVER_SERVLET_CONTEXT_PATH: /boundary-service
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
       EGOV_MDMS_SEARCH_ENDPOINT: /mdms-v2/v1/_search
-      EGOV_USER_HOST: http://egov-user:8107
-      EGOV_IDGEN_HOST: http://egov-idgen:8088
-      EGOV_LOCALIZATION_HOST: http://egov-localization:8096
+      EGOV_USER_HOST: http://egov-user:8107/
+      EGOV_IDGEN_HOST: http://egov-idgen:8088/
+      EGOV_LOCALIZATION_HOST: http://egov-localization:8096/
       STATE_LEVEL_TENANT_ID: pg
       OTEL_TRACES_EXPORTER: none
       OTEL_INSTRUMENTATION_JDBC_ENABLED: 'false'
@@ -660,7 +660,7 @@ services:
       IS_BUCKET_FIXED: 'true'
       FIXED_BUCKETNAME: egov-rainmaker
       ALLOWED_FORMATS_MAP: "{jpg:{'image/jpg','image/jpeg'},jpeg:{'image/jpeg','image/jpg'},png:{'image/png'},pdf:{'application/pdf'},odt:{'application/vnd.oasis.opendocument.text'},ods:{'application/vnd.oasis.opendocument.spreadsheet'},docx:{'application/x-tika-msoffice','application/x-tika-ooxml','application/vnd.oasis.opendocument.text','application/msword'},doc:{'application/x-tika-msoffice','application/x-tika-ooxml','application/vnd.oasis.opendocument.text','application/msword'},dxf:{'text/plain','application/dxf','application/octet-stream','image/vnd.dxf','image/vnd.dxf; format=ascii','image/vnd.dxf; format=binary','image/vnd.dxb'},csv:{'text/plain'},txt:{'text/plain'},xlsx:{'application/x-tika-ooxml','application/x-tika-msoffice','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/zip'},xls:{'application/x-tika-ooxml','application/x-tika-msoffice','application/vnd.ms-excel','multipart/form-data'},zip:{'application/zip','application/octet-stream'},geojson:{'application/json','text/plain','application/geo+json','multipart/form-data'},json:{'application/json','text/plain'}}"
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
     ports:
       - 18084:8083
     healthcheck:
@@ -704,12 +704,12 @@ services:
       SERVER_PORT: 8092
       OTEL_TRACES_EXPORTER: none
       JAVA_TOOL_OPTIONS: -Xms64m -Xmx192m
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
-      EGOV_IDGEN_HOST: http://egov-idgen:8088
-      EGOV_USER_HOST: http://egov-user:8107
-      EGOV_FILESTORE_HOST: http://egov-filestore:8083
-      EGOV_LOCALIZATION_HOST: http://egov-localization:8096
-      EGOV_BOUNDARY_HOST: http://boundary-service:8081
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
+      EGOV_IDGEN_HOST: http://egov-idgen:8088/
+      EGOV_USER_HOST: http://egov-user:8107/
+      EGOV_FILESTORE_HOST: http://egov-filestore:8083/
+      EGOV_LOCALIZATION_HOST: http://egov-localization:8096/
+      EGOV_BOUNDARY_HOST: http://boundary-service:8081/
       STATE_LEVEL_TENANT_ID: pg
       EGOV_STATELEVEL_TENANT: pg
       HRMS_SYSTEM_USERNAME: INTERNAL_USER
@@ -879,16 +879,16 @@ services:
       SPRING_CACHE_TYPE: redis
       SPRING_CACHE_REDIS_TIME-TO-LIVE: "60"
       SPRING_CACHE_AUTOEXPIRY: "true"
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
       EGOV_MDMS_SEARCH_ENDPOINT: /mdms-v2/v1/_search
-      EGOV_ENC_HOST: http://egov-enc-service:1234
-      EGOV_LOCALIZATION_HOST: http://egov-localization:8096
+      EGOV_ENC_HOST: http://egov-enc-service:1234/
+      EGOV_LOCALIZATION_HOST: http://egov-localization:8096/
       EGOV_ENC_ENCRYPT_ENDPOINT: /egov-enc-service/crypto/v1/_encrypt
       EGOV_ENC_DECRYPT_ENDPOINT: /egov-enc-service/crypto/v1/_decrypt
-      EGOV_IDGEN_HOST: http://egov-idgen:8088
+      EGOV_IDGEN_HOST: http://egov-idgen:8088/
       EGOV_IDGEN_PATH: egov-idgen/id/_generate
       EGOV_IDGEN_INTEGRATION_ENABLED: "true"
-      EGOV_USER_HOST: http://egov-user:8107
+      EGOV_USER_HOST: http://egov-user:8107/
       EGOV_CREATE_USER_URL: /user/users/_createnovalidate
       EGOV_SEARCH_USER_URL: /user/_search
       EGOV_UPDATE_USER_URL: /user/users/_updatenovalidate
@@ -1237,8 +1237,8 @@ services:
       SERVER_PORT: "8080"
       SERVER_SERVLET_CONTEXT_PATH: /user-otp
       OTP_HOST: http://egov-otp:8080/otp
-      USER_HOST: http://egov-user:8107
-      EGOV_LOCALISATION_HOST: http://egov-localization:8096
+      USER_HOST: http://egov-user:8107/
+      EGOV_LOCALISATION_HOST: http://egov-localization:8096/
       SMS_TOPIC: egov.core.notification.sms
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx256m
       OTEL_TRACES_EXPORTER: none
@@ -1334,12 +1334,12 @@ services:
       DB_NAME: egov
       DB_USER: egov
       DB_PASSWORD: ${POSTGRES_PASSWORD:-egov123}
-      EGOV_EXTERNAL_HOST: http://localhost:18000
+      EGOV_EXTERNAL_HOST: http://localhost:18000/
       EGOV_HOST: http://localhost:18000
       DEFAULT_LOCALISATION_TENANT: pg
       STATE_LEVEL_TENANT_ID: pg
-      EGOV_LOCALISATION_HOST: http://egov-localization:8096
-      EGOV_FILESTORE_SERVICE_HOST: http://egov-filestore:8083
+      EGOV_LOCALISATION_HOST: http://egov-localization:8096/
+      EGOV_FILESTORE_SERVICE_HOST: http://egov-filestore:8083/
       MAX_NUMBER_PAGES: "80"
       # Local copies from configs/staging: https://github.com/egovernments/configs/tree/staging/pdf-service
       DATA_CONFIG_URLS: file:///pdf-config/data-config/pt-receipt.json
@@ -1394,15 +1394,15 @@ services:
       DB_USER: egov
       DB_PASSWORD: ${POSTGRES_PASSWORD:-egov123}
       KAFKA_BROKER_HOST: redpanda:9092
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
-      EGOV_PDF_HOST: http://pdf-service:8080
-      EGOV_USER_HOST: http://egov-user:8107
-      EGOV_WORKFLOW_HOST: http://egov-workflow-v2:8109
-      EGOV_FILESTORE_SERVICE_HOST: http://egov-filestore:8083
-      EGOV_LOCALIZATION_HOST: http://egov-localization:8096
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
+      EGOV_PDF_HOST: http://pdf-service:8080/
+      EGOV_USER_HOST: http://egov-user:8107/
+      EGOV_WORKFLOW_HOST: http://egov-workflow-v2:8109/
+      EGOV_FILESTORE_SERVICE_HOST: http://egov-filestore:8083/
+      EGOV_LOCALIZATION_HOST: http://egov-localization:8096/
       CONTEXT_PATH: /studio-pdf
-      EGOV_HOST: http://localhost:18000
-      PUBLIC_SERVICE_HOST: http://public-service:8080
+      EGOV_HOST: http://localhost:18000/
+      PUBLIC_SERVICE_HOST: http://public-service:8080/
       SERVER_PORT: "8080"
       NODE_ENV: production
     ports:
@@ -1473,16 +1473,16 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       SERVER_PORT: "8080"
       SERVER_SERVLET_CONTEXT_PATH: /inbox
-      WORKFLOW_HOST: http://egov-workflow-v2:8109
-      EGOV_MDMS_HOST: http://egov-mdms-service:8094
-      EGOV_USER_HOST: http://egov-user:8107
-      EGOV_SEARCHER_HOST: http://egov-mdms-service:8094
-      SERVICES_ESINDEXER_HOST: http://elasticsearch:9200
+      WORKFLOW_HOST: http://egov-workflow-v2:8109/
+      EGOV_MDMS_HOST: http://egov-mdms-service:8094/
+      EGOV_USER_HOST: http://egov-user:8107/
+      EGOV_SEARCHER_HOST: http://egov-mdms-service:8094/
+      SERVICES_ESINDEXER_HOST: http://elasticsearch:9200/
       WORKFLOW_PROCESS_SEARCH_PATH: egov-workflow-v2/egov-wf/process/_search
       WORKFLOW_BUSINESSSERVICE_SEARCH_PATH: egov-workflow-v2/egov-wf/businessservice/_search
       WORKFLOW_PROCESS_COUNT_PATH: egov-workflow-v2/egov-wf/process/_count
       WORKFLOW_PROCESS_STATUSCOUNT_PATH: egov-workflow-v2/egov-wf/process/_statuscount
-      EGOV_VEHICLE_HOST: http://egov-mdms-service:8094
+      EGOV_VEHICLE_HOST: http://egov-mdms-service:8094/
       EGOV_ES_USERNAME: ""
       EGOV_ES_PASSWORD: ""
       SERVICES_ESINDEXER_USERNAME: ""
