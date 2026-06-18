@@ -1,6 +1,6 @@
 var globalConfigs = (function () {
   var contextPath = "digit-studio";
-  var stateTenantId = "st";
+  var stateTenantId = "pg";
   var appTitle = 'Digit Studio';
   var gmaps_api_key = "AIzaSyAASfCFja6YxwDzEAzhHFc8B-17TNTCV0g";
   var configModuleName = "commonUiConfig";
