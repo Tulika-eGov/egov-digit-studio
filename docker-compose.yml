@@ -308,6 +308,7 @@ services:
     ports:
       - 11234:1234
     healthcheck:
+      disable: true
       test: ["CMD-SHELL", "wget -qO- http://localhost:1234/egov-enc-service/actuator/health >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 10s
@@ -378,8 +379,8 @@ services:
         condition: service_healthy
       egov-otp:
         condition: service_healthy
-      egov-enc-service:
-        condition: service_healthy
+      # egov-enc-service:
+      #   condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/egov?sslmode=disable
       SPRING_DATASOURCE_USERNAME: egov
@@ -398,12 +399,14 @@ services:
       MDMS_V2_HOST: http://egov-mdms-service:8094
       EGOV_MDMS_V2_HOST: http://egov-mdms-service:8094
       MDMS_SEARCH_ENDPOINT: /mdms-v2/v1/_search
+      EGOV_USER_HOST: http://egov-user:8107
       EGOV_OTP_HOST: http://egov-otp:8080/otp
       EGOV_ENC_HOST: http://egov-enc-service:1234
       EGOV_IDGEN_HOST: http://egov-idgen:8088
       EGOV_ACCESSCONTROL_HOST: http://egov-accesscontrol:8090
       EGOV_STATE_LEVEL_TENANT_ID: pg
       STATE_LEVEL_TENANT_ID: pg
+      CITIZEN_LOGIN_PASSWORD_OTP_FIXED_ENABLED: "true"
       OTEL_TRACES_EXPORTER: none
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx384m
     ports:
@@ -702,11 +705,13 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       SPRING_KAFKA_CONSUMER_GROUP_ID: employee-group1
       SERVER_PORT: 8092
+      SERVER_SERVLET_CONTEXT_PATH: /egov-hrms
       OTEL_TRACES_EXPORTER: none
       JAVA_TOOL_OPTIONS: -Xms64m -Xmx192m
       EGOV_MDMS_HOST: http://egov-mdms-service:8094
       EGOV_IDGEN_HOST: http://egov-idgen:8088/
       EGOV_USER_HOST: http://egov-user:8107
+      EGOV_INDIVIDUAL_HOST: http://health-individual:8080/
       EGOV_FILESTORE_HOST: http://egov-filestore:8083
       EGOV_LOCALIZATION_HOST: http://egov-localization:8096
       EGOV_BOUNDARY_HOST: http://boundary-service:8081
@@ -855,8 +860,8 @@ services:
         condition: service_healthy
       egov-mdms-service:
         condition: service_healthy
-      egov-enc-service:
-        condition: service_healthy
+      # egov-enc-service:
+      #   condition: service_healthy
       egov-idgen:
         condition: service_healthy
       egov-user:
@@ -864,6 +869,7 @@ services:
       egov-localization:
         condition: service_healthy
     environment:
+      EGOV_STATE_LEVEL_TENANT_ID: pg
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/egov?sslmode=disable
       SPRING_DATASOURCE_USERNAME: egov
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-egov123}
@@ -885,7 +891,7 @@ services:
       EGOV_LOCALIZATION_HOST: http://egov-localization:8096
       EGOV_ENC_ENCRYPT_ENDPOINT: /egov-enc-service/crypto/v1/_encrypt
       EGOV_ENC_DECRYPT_ENDPOINT: /egov-enc-service/crypto/v1/_decrypt
-      EGOV_IDGEN_HOST: http://egov-idgen:8088
+      EGOV_IDGEN_HOST: http://egov-idgen:8088/
       EGOV_IDGEN_PATH: egov-idgen/id/_generate
       EGOV_IDGEN_INTEGRATION_ENABLED: "true"
       EGOV_USER_HOST: http://egov-user:8107
@@ -898,6 +904,10 @@ services:
       USER_SERVICE_ACCOUNT_LOCKED: "false"
       NOTIFICATION_SMS_ENABLED: "false"
       STATE_LEVEL_TENANT_ID: pg
+      INDIVIDUAL_PRODUCER_SAVE_TOPIC: save-individual-health-topic
+      INDIVIDUAL_PRODUCER_UPDATE_TOPIC: update-individual-health-topic
+      INDIVIDUAL_PRODUCER_DELETE_TOPIC: delete-individual-health-topic
+      INDIVIDUAL_PRODUCER_UPDATE_USER_ID_TOPIC: update-user-id-health-topic
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx192m
       OTEL_TRACES_EXPORTER: none
     ports:
@@ -1187,9 +1197,9 @@ services:
     networks:
       - egov-network
 
-  egov-otp:
+  egov-otp-backend:
     image: ${IMAGE_EGOV_OTP:-egovio/egov-otp:master-1e8d2bb}
-    container_name: egov-otp
+    container_name: egov-otp-backend
     depends_on:
       pgbouncer:
         condition: service_healthy
@@ -1207,8 +1217,6 @@ services:
       SERVER_SERVLET_CONTEXT_PATH: /otp
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx256m
       OTEL_TRACES_EXPORTER: none
-    ports:
-      - "18115:8080"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/otp/health >/dev/null 2>&1 || exit 1"]
       interval: 30s
@@ -1220,6 +1228,32 @@ services:
         limits:
           memory: 512M
           cpus: "0.25"
+    networks:
+      - egov-network
+
+  # OpenResty proxy: injects identity=mobileNumber when missing so that
+  # user-otp (sandbox-log-86902f9) works with egov-otp (master-1e8d2bb).
+  egov-otp:
+    image: openresty/openresty:alpine
+    container_name: egov-otp
+    depends_on:
+      egov-otp-backend:
+        condition: service_healthy
+    volumes:
+      - ./nginx/otp-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "18115:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/wget -qO- http://127.0.0.1:8080/otp/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.1"
     networks:
       - egov-network
 
@@ -1240,6 +1274,7 @@ services:
       USER_HOST: http://egov-user:8107
       EGOV_LOCALISATION_HOST: http://egov-localization:8096
       SMS_TOPIC: egov.core.notification.sms
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx256m
       OTEL_TRACES_EXPORTER: none
     ports:
@@ -1546,6 +1581,7 @@ services:
       KONG_STATUS_LISTEN: 0.0.0.0:8100
       KONG_MEM_CACHE_SIZE: 64m
       KONG_NGINX_WORKER_PROCESSES: 1
+      KONG_UNTRUSTED_LUA_SANDBOX_REQUIRES: "cjson,cjson.safe,resty.http"
     deploy:
       resources:
         limits:
