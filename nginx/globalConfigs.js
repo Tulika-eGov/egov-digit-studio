@@ -27,6 +27,7 @@ var globalConfigs = (function () {
     mobileNumberLength: 10,
   };
   var individualServiceContextPath = "/health-individual";
+  var useIndividualModel = true;
   window.document.title = appTitle;
 
   var getConfig = function (key) {
@@ -50,6 +51,7 @@ var globalConfigs = (function () {
     else if (key === "MDMS_V1_CONTEXT_PATH") return mdmsContext;
     else if (key === "CORE_MOBILE_CONFIGS") return mobileNumberFeatures;
     else if (key === "INDIVIDUAL_SERVICE_CONTEXT_PATH") return individualServiceContextPath;
+    else if (key === "USE_INDIVIDUAL_MODEL") return useIndividualModel;
     else if (key === "SVG_HEADER_SECONDARY_LOGO_URL") return svgHeaderSecondaryLogoURL;
   };
   return {

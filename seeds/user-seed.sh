@@ -5,6 +5,7 @@
 set -e
 
 EGOV_USER_HOST="${EGOV_USER_HOST:-http://egov-user:8107}"
+EGOV_USER_HOST="${EGOV_USER_HOST%/}"  # strip trailing slash
 MAX_RETRIES=30
 RETRY_INTERVAL=5
 

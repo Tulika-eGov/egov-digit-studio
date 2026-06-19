@@ -40,6 +40,49 @@ plugins:
   config:
     allowed_payload_size: 10
     size_unit: megabytes
+# Enrich RequestInfo.userInfo from authToken the way Zuul used to.
+# Calls POST /user/_details?access_token=<token> and injects the returned
+# user object so downstream services (e.g. workflow) can call getUserInfo().
+- name: pre-function
+  config:
+    access:
+    - |
+      local cjson = require "cjson.safe"
+      local http  = require "resty.http"
+
+      if kong.request.get_method() ~= "POST" then return end
+      local ct = (kong.request.get_header("content-type") or ""):lower()
+      if not ct:find("application/json", 1, true) then return end
+
+      local raw_body = kong.request.get_raw_body()
+      if not raw_body or raw_body == "" then return end
+
+      local data = cjson.decode(raw_body)
+      if not data or type(data) ~= "table" then return end
+
+      local ri = data.RequestInfo
+      if type(ri) ~= "table" then return end
+
+      local auth_token = ri.authToken
+      if type(auth_token) ~= "string" or auth_token == "" then return end
+      if ri.userInfo ~= nil then return end
+
+      local httpc = http.new()
+      httpc:set_timeout(3000)
+      local res, err = httpc:request_uri("http://egov-user:8107/user/_details", {
+        method  = "POST",
+        headers = { ["Content-Type"] = "application/x-www-form-urlencoded" },
+        body    = "access_token=" .. auth_token,
+      })
+      if not res or res.status ~= 200 then return end
+
+      local user_info = cjson.decode(res.body)
+      if not user_info or type(user_info) ~= "table" or user_info.Errors then return end
+
+      ri.userInfo = user_info
+      local new_body = cjson.encode(data)
+      kong.service.request.set_raw_body(new_body)
+      kong.service.request.set_header("Content-Length", tostring(#new_body))
 services:
 - name: mdms-service
   url: http://egov-mdms-service:8094
