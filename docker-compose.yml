@@ -308,6 +308,7 @@ services:
     ports:
       - 11234:1234
     healthcheck:
+      disable: true
       test: ["CMD-SHELL", "wget -qO- http://localhost:1234/egov-enc-service/actuator/health >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 10s
@@ -378,8 +379,8 @@ services:
         condition: service_healthy
       egov-otp:
         condition: service_healthy
-      egov-enc-service:
-        condition: service_healthy
+      # egov-enc-service:
+      #   condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/egov?sslmode=disable
       SPRING_DATASOURCE_USERNAME: egov
@@ -707,6 +708,7 @@ services:
       EGOV_MDMS_HOST: http://egov-mdms-service:8094
       EGOV_IDGEN_HOST: http://egov-idgen:8088/
       EGOV_USER_HOST: http://egov-user:8107
+      EGOV_INDIVIDUAL_HOST: http://health-individual:8080/
       EGOV_FILESTORE_HOST: http://egov-filestore:8083
       EGOV_LOCALIZATION_HOST: http://egov-localization:8096
       EGOV_BOUNDARY_HOST: http://boundary-service:8081
@@ -855,8 +857,8 @@ services:
         condition: service_healthy
       egov-mdms-service:
         condition: service_healthy
-      egov-enc-service:
-        condition: service_healthy
+      # egov-enc-service:
+      #   condition: service_healthy
       egov-idgen:
         condition: service_healthy
       egov-user:
@@ -864,6 +866,7 @@ services:
       egov-localization:
         condition: service_healthy
     environment:
+      EGOV_STATE_LEVEL_TENANT_ID: pg
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/egov?sslmode=disable
       SPRING_DATASOURCE_USERNAME: egov
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-egov123}
@@ -885,7 +888,7 @@ services:
       EGOV_LOCALIZATION_HOST: http://egov-localization:8096
       EGOV_ENC_ENCRYPT_ENDPOINT: /egov-enc-service/crypto/v1/_encrypt
       EGOV_ENC_DECRYPT_ENDPOINT: /egov-enc-service/crypto/v1/_decrypt
-      EGOV_IDGEN_HOST: http://egov-idgen:8088
+      EGOV_IDGEN_HOST: http://egov-idgen:8088/
       EGOV_IDGEN_PATH: egov-idgen/id/_generate
       EGOV_IDGEN_INTEGRATION_ENABLED: "true"
       EGOV_USER_HOST: http://egov-user:8107
