@@ -141,16 +141,29 @@ class CRSLoader:
         return results
 
     def load_boundaries(self, excel_path: str, target_tenant: str = None,
-                       hierarchy_type: str = "ADMIN") -> Dict:
-        """Phase 2: Load boundary hierarchy from Excel
+                       hierarchy_type: str = "ADMIN",
+                       hierarchy_sheet: str = "Hierarchy",
+                       entity_sheet: str = "Entity",
+                       relations_sheet: str = "Relations") -> Dict:
+        """Phase 2: Load boundary hierarchy, entities, relationships, and boundary data from Excel
+
+        Five sub-phases:
+          1. Create boundary hierarchy definition (from 'Hierarchy' sheet)
+          2. Create boundary entities (from 'Entity' sheet)
+          3. Create boundary relationships (from 'Relations' sheet)
+          4. Upload Excel to FileStore
+          5. Process boundary data
 
         Args:
             excel_path: Path to "Boundary Master.xlsx"
-            target_tenant: Target tenant ID
-            hierarchy_type: Hierarchy type (default: "ADMIN")
+            target_tenant: Target tenant ID (overrides login tenant)
+            hierarchy_type: Fallback hierarchy type when not read from Excel (default: "ADMIN")
+            hierarchy_sheet: Sheet name for hierarchy definition (default: "Hierarchy")
+            entity_sheet: Sheet name for boundary entities (default: "Entity")
+            relations_sheet: Sheet name for boundary relationships (default: "Relations")
 
         Returns:
-            dict: Processing result with status
+            dict: Keys: 'hierarchy', 'entities', 'relationships', 'boundary'
         """
         self._check_auth()
 
@@ -158,12 +171,66 @@ class CRSLoader:
         print(f"PHASE 2: BOUNDARIES")
         print(f"{'='*60}")
         print(f"File: {os.path.basename(excel_path)}")
-        print(f"Hierarchy: {hierarchy_type}")
 
         tenant = target_tenant or self.tenant_id
+        reader = UnifiedExcelReader(excel_path)
+        results = {'hierarchy': None, 'entities': None, 'relationships': None, 'boundary': None}
 
-        # 1. Upload Excel to FileStore
-        print(f"\n[1/2] Uploading boundary file...")
+        # ── Phase 2.1: Create boundary hierarchy ────────────────────────────
+        print(f"\n[1/5] Creating boundary hierarchy...")
+        hierarchies = reader.read_boundary_hierarchy(sheet_name=hierarchy_sheet)
+
+        if not hierarchies:
+            print(f"   No hierarchy definitions found in sheet '{hierarchy_sheet}'")
+            print(f"   Skipping hierarchy creation")
+        else:
+            hierarchy_results = []
+            for h in hierarchies:
+                h_type = h.get('hierarchyType', hierarchy_type)
+                print(f"   Hierarchy type: {h_type} ({len(h['boundaryHierarchy'])} levels)")
+                hierarchy_data = {
+                    'tenantId': tenant,
+                    'hierarchyType': h_type,
+                    'boundaryHierarchy': h['boundaryHierarchy'],
+                }
+                try:
+                    res = self.uploader.create_boundary_hierarchy(hierarchy_data)
+                    hierarchy_results.append({'hierarchyType': h_type, 'result': res})
+                except Exception as e:
+                    print(f"   Failed to create hierarchy '{h_type}': {e}")
+                    hierarchy_results.append({'hierarchyType': h_type, 'error': str(e)})
+            results['hierarchy'] = hierarchy_results
+
+        # ── Phase 2.2: Create boundary entities ─────────────────────────────
+        print(f"\n[2/5] Creating boundary entities...")
+        entities = reader.read_boundary_entities(
+            target_tenant=tenant,
+            sheet_name=entity_sheet
+        )
+
+        if not entities:
+            print(f"   No boundary entities found in sheet '{entity_sheet}'")
+            print(f"   Skipping entity creation")
+        else:
+            print(f"   Found {len(entities)} entities")
+            results['entities'] = self.uploader.create_boundary_entities(entities)
+
+        # ── Phase 2.3: Create boundary relationships ─────────────────────────
+        print(f"\n[3/5] Creating boundary relationships...")
+        relationships = reader.read_boundary_relationships(
+            target_tenant=tenant,
+            sheet_name=relations_sheet
+        )
+
+        if not relationships:
+            print(f"   No relationships found in sheet '{relations_sheet}'")
+            print(f"   Skipping relationship creation")
+        else:
+            print(f"   Found {len(relationships)} relationships")
+            results['relationships'] = self.uploader.create_boundary_relationships(relationships)
+
+        # ── Phase 2.4: Upload Excel to FileStore ────────────────────────────
+        print(f"\n[4/5] Uploading boundary file...")
         filestore_id = self.uploader.upload_file_to_filestore(
             file_path=excel_path,
             tenant_id=tenant,
@@ -172,23 +239,28 @@ class CRSLoader:
 
         if not filestore_id:
             print("   Failed to upload file")
-            return {'status': 'failed', 'error': 'File upload failed'}
+            results['boundary'] = {'status': 'failed', 'error': 'File upload failed'}
+            return results
 
         print(f"   FileStore ID: {filestore_id}")
 
-        # 2. Process boundaries
-        print(f"\n[2/2] Processing boundary data...")
-        result = self.uploader.process_boundary_data(
+        # ── Phase 2.5: Process boundary data ────────────────────────────────
+        active_hierarchy_type = (
+            hierarchies[0]['hierarchyType'] if hierarchies else hierarchy_type
+        )
+        print(f"\n[5/5] Processing boundary data (hierarchy: {active_hierarchy_type})...")
+        boundary_result = self.uploader.process_boundary_data(
             tenant_id=tenant,
             filestore_id=filestore_id,
-            hierarchy_type=hierarchy_type,
+            hierarchy_type=active_hierarchy_type,
             action="create"
         )
 
-        status = result.get('status', 'unknown')
+        status = boundary_result.get('status', 'unknown')
         print(f"\n   Status: {status}")
+        results['boundary'] = boundary_result
 
-        return result
+        return results
 
     def load_common_masters(self, excel_path: str, target_tenant: str = None) -> Dict:
         """Phase 3: Load departments, designations, and complaint types
