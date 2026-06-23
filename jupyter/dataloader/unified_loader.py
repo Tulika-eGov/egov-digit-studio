@@ -734,6 +734,120 @@ class UnifiedExcelReader:
 
         return localizations
 
+    def read_boundary_entities(self, target_tenant: str, sheet_name: str = "Entity") -> list:
+        """Read boundary entities from Excel for /boundary-service/boundary/_create.
+
+        Expected sheet column:
+          - Boundary : full JSON of a single boundary object
+                       (tenantId is overridden at runtime)
+
+        Each row = one boundary entity. Example cell value:
+            {"code": "PB_AMR_AJN", "geometry": null}
+
+        Returns:
+            List of dicts: [{"tenantId": ..., "code": ..., "geometry": ...}, ...]
+        """
+        try:
+            df = pd.read_excel(self.excel_file, sheet_name=sheet_name)
+        except Exception as e:
+            print(f"Could not read sheet '{sheet_name}': {e}")
+            return []
+
+        if df.empty:
+            return []
+
+        entities = []
+        for idx, row in df.iterrows():
+            raw = row.get('Boundary')
+            if pd.isna(raw) or str(raw).strip() == '':
+                continue
+            try:
+                entity = json.loads(str(raw).strip())
+                entity['tenantId'] = target_tenant
+                entities.append(entity)
+            except Exception as e:
+                print(f"   Row {idx + 2}: invalid Boundary JSON — skipping ({e})")
+
+        return entities
+
+    def read_boundary_relationships(self, target_tenant: str, sheet_name: str = "Relations") -> list:
+        """Read boundary relationships from Excel for /boundary-service/boundary-relationships/_create.
+
+        Expected sheet column:
+          - BoundaryRelationship : full JSON of a single relationship object
+                                   (tenantId is overridden at runtime)
+
+        Each row = one relationship. Example cell value:
+            {"code": "PB_AMR_AJN", "hierarchyType": "ADMIN", "boundaryType": "Tehsil", "parent": "PB_AMR"}
+
+        Returns:
+            List of dicts: [{"tenantId": ..., "code": ..., "hierarchyType": ...,
+                              "boundaryType": ..., "parent": ...}, ...]
+        """
+        try:
+            df = pd.read_excel(self.excel_file, sheet_name=sheet_name)
+        except Exception as e:
+            print(f"Could not read sheet '{sheet_name}': {e}")
+            return []
+
+        if df.empty:
+            return []
+
+        relationships = []
+        for idx, row in df.iterrows():
+            raw = row.get('BoundaryRelationship')
+            if pd.isna(raw) or str(raw).strip() == '':
+                continue
+            try:
+                relationship = json.loads(str(raw).strip())
+                relationship['tenantId'] = target_tenant
+                relationships.append(relationship)
+            except Exception as e:
+                print(f"   Row {idx + 2}: invalid BoundaryRelationship JSON — skipping ({e})")
+
+        return relationships
+
+    def read_boundary_hierarchy(self, sheet_name: str = "Hierarchy") -> list:
+        """Read boundary hierarchy definitions from Excel.
+
+        Expected sheet column:
+          - BoundaryHierarchy : full JSON of the BoundaryHierarchy object
+                                (tenantId is overridden at runtime)
+
+        Each row = one hierarchy definition. Example cell value:
+            {
+                "hierarchyType": "ADMIN",
+                "boundaryHierarchy": [
+                    {"boundaryType": "State",    "parentBoundaryType": null,    "active": true},
+                    {"boundaryType": "District", "parentBoundaryType": "State", "active": true}
+                ]
+            }
+
+        Returns:
+            List of parsed hierarchy dicts ready for APIUploader.create_boundary_hierarchy()
+        """
+        try:
+            df = pd.read_excel(self.excel_file, sheet_name=sheet_name)
+        except Exception as e:
+            print(f"Could not read sheet '{sheet_name}': {e}")
+            return []
+
+        if df.empty:
+            return []
+
+        result = []
+        for idx, row in df.iterrows():
+            raw = row.get('BoundaryHierarchy')
+            if pd.isna(raw) or str(raw).strip() == '':
+                continue
+            try:
+                hierarchy = json.loads(str(raw).strip())
+                result.append(hierarchy)
+            except Exception as e:
+                print(f"   Row {idx + 2}: invalid BoundaryHierarchy JSON — skipping ({e})")
+
+        return result
+
 
 # ============================================================================
 # WORKFLOW BUILDER
@@ -1685,6 +1799,114 @@ class APIUploader:
         except Exception as e:
             print(f"\n❌ [ERROR] Failed: {str(e)}")
             raise
+
+    def create_boundary_entities(self, boundary_list: List[Dict], batch_size: int = 500) -> Dict:
+        """Create boundary entities via /boundary-service/boundary/_create.
+
+        Args:
+            boundary_list: List of dicts with keys: tenantId, code, geometry
+            batch_size: Number of entities per API call (default 500)
+
+        Returns:
+            dict: {"created": int, "failed": int, "errors": list}
+        """
+        url = f"{self.boundary_url}/boundary/_create"
+        headers = {'Content-Type': 'application/json'}
+
+        created = 0
+        failed = 0
+        errors = []
+
+        total = len(boundary_list)
+        batches = [boundary_list[i:i + batch_size] for i in range(0, total, batch_size)]
+
+        for batch_num, batch in enumerate(batches, 1):
+            payload = {
+                "RequestInfo": {
+                    "apiId": "Rainmaker",
+                    "ver": "",
+                    "ts": 0,
+                    "action": "",
+                    "did": "",
+                    "key": "",
+                    "msgId": "1695889012604|en_IN",
+                    "userInfo": self.user_info,
+                    "plainAccessRequest": {}
+                },
+                "Boundary": batch
+            }
+
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                if response.status_code in (200, 201, 202):
+                    print(f"   [OK] Batch {batch_num}/{len(batches)}: {len(batch)} entities created")
+                    created += len(batch)
+                else:
+                    error_text = response.text[:300] if response.text else str(response.status_code)
+                    print(f"   [FAILED] Batch {batch_num}/{len(batches)}: HTTP {response.status_code}")
+                    print(f"   ERROR: {error_text}")
+                    failed += len(batch)
+                    errors.append({'batch': batch_num, 'error': error_text})
+            except Exception as e:
+                print(f"   [ERROR] Batch {batch_num}/{len(batches)}: {str(e)[:200]}")
+                failed += len(batch)
+                errors.append({'batch': batch_num, 'error': str(e)[:200]})
+
+        print(f"\n   Total: {created} created, {failed} failed")
+        return {'created': created, 'failed': failed, 'errors': errors}
+
+    def create_boundary_relationships(self, relationship_list: List[Dict]) -> Dict:
+        """Create boundary relationships one-by-one via /boundary-service/boundary-relationships/_create.
+
+        Args:
+            relationship_list: List of dicts with keys: tenantId, code, hierarchyType, boundaryType, parent
+
+        Returns:
+            dict: {"created": int, "failed": int, "errors": list}
+        """
+        url = f"{self.boundary_url}/boundary-relationships/_create"
+        headers = {'Content-Type': 'application/json'}
+
+        created = 0
+        failed = 0
+        errors = []
+        total = len(relationship_list)
+
+        for i, rel in enumerate(relationship_list, 1):
+            payload = {
+                "RequestInfo": {
+                    "apiId": "Rainmaker",
+                    "authToken": self.auth_token,
+                    "userInfo": self.user_info,
+                    "msgId": "1695889012604|en_IN",
+                    "plainAccessRequest": {}
+                },
+                "BoundaryRelationship": rel
+            }
+
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                if response.status_code in (200, 201, 202):
+                    print(f"   [OK] [{i}/{total}] {rel.get('code')} → parent: {rel.get('parent')}")
+                    created += 1
+                else:
+                    error_text = response.text[:300] if response.text else str(response.status_code)
+                    # Treat already-exists as success
+                    if 'already exists' in error_text.lower() or 'duplicate' in error_text.lower():
+                        print(f"   [EXISTS] [{i}/{total}] {rel.get('code')}")
+                        created += 1
+                    else:
+                        print(f"   [FAILED] [{i}/{total}] {rel.get('code')} — HTTP {response.status_code}")
+                        print(f"   ERROR: {error_text}")
+                        failed += 1
+                        errors.append({'code': rel.get('code'), 'error': error_text})
+            except Exception as e:
+                print(f"   [ERROR] [{i}/{total}] {rel.get('code')} — {str(e)[:200]}")
+                failed += 1
+                errors.append({'code': rel.get('code'), 'error': str(e)[:200]})
+
+        print(f"\n   Total: {created} created/exists, {failed} failed")
+        return {'created': created, 'failed': failed, 'errors': errors}
 
     def update_stateinfo_language(self, language_label: str, language_value: str, state_tenant: str = "pg"):
         """
